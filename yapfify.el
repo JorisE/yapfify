@@ -44,7 +44,7 @@
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER and
 return the exit code."
   (with-current-buffer input-buffer
-    (call-process-region (point-min) (point-max) "yapf" nil tmpbuf)))
+    (call-process-region (point-min) (point-max) "yapf" nil output-buffer)))
 
 ;;;###autoload
 (defun yapfify-buffer ()
@@ -53,8 +53,6 @@ will be shown in a <?> buffer."
   (interactive)
   (let* ((file (buffer-file-name))
          (original-buffer (current-buffer))
-         ;; Call the temporary buffer "Yapf Errors". If the user is going to see
-         ;; this buffer, it will be because there are errors.
          (tmpbuf (get-buffer-create "Yapf output"))
          (exit-code (call-yapf-bin original-buffer tmpbuf)))
 
@@ -66,6 +64,8 @@ will be shown in a <?> buffer."
     (cond ((eq exit-code 0))
 
           ((eq exit-code 2)
+           ;; FIXME: This turns out to be ridiculously slow.
+           ;; FIXME: This sends you to the start of the file.
            (with-current-buffer tmpbuf
              (copy-to-buffer original-buffer (point-min) (point-max))))
 
