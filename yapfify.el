@@ -49,10 +49,11 @@ return the exit code."
 ;;;###autoload
 (defun yapfify-buffer ()
   "Try to yapfify the current buffer. If yapf exits with an error, the output
-will be shown in a <?> buffer."
+will be shown in a help-window."
   (interactive)
   (let* ((file (buffer-file-name))
          (original-buffer (current-buffer))
+         (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
          (tmpbuf (get-buffer-create "Yapf output"))
          (exit-code (call-yapf-bin original-buffer tmpbuf)))
 
@@ -64,10 +65,9 @@ will be shown in a <?> buffer."
     (cond ((eq exit-code 0))
 
           ((eq exit-code 2)
-           ;; FIXME: This turns out to be ridiculously slow.
-           ;; FIXME: This sends you to the start of the file.
-           (with-current-buffer tmpbuf
-             (copy-to-buffer original-buffer (point-min) (point-max))))
+             (with-current-buffer tmpbuf
+               (copy-to-buffer original-buffer (point-min) (point-max)))
+             (goto-char original-point))
 
           ((eq exit-code 1)
            (with-help-window "*Yapf errors*"
