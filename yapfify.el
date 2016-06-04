@@ -72,7 +72,7 @@ will be shown in a help-window."
           ((eq exit-code 1)
            (with-help-window "*Yapf errors*"
              ;; Wow, isn't this weird. There is apparently no function that
-             ;; evauates body in the freshly created buffer, so you always
+             ;; evaluates body in the freshly created buffer, so you always
              ;; have to do `with-current-buffer` on the buffer you just
              ;; created.
              (with-current-buffer "*Yapf errors*"
@@ -80,12 +80,12 @@ will be shown in a help-window."
                 (format "Yapf failed with the following error(s): \n\n%s"
                         (with-current-buffer tmpbuf
                           (buffer-string))))))))
-
                                         ; Clean up tmpbuf
     (kill-buffer tmpbuf)))
 
 (defun yapfify-enable-on-save ()
   "Add this hook to python-mode to enable yapfifying before saving."
+  (interactive)
   (add-hook 'before-save-hook 'yapfify-buffer nil t))
 
 (defun toggle-yapfify-enable-on-save ()
