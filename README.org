@@ -1,11 +1,12 @@
-Yapfify uses yapf to format a Python buffer. It can be called explicitly on a
+* Yapfify 
+Yapfify uses [[https://github.com/google/yapf][YAPF]] to format a Python buffer. It can be called explicitly on a
 certain buffer, but more conveniently it can be used to automatically format
 a buffer before saving it.
 
 Because YAPF will sometimes do things to your code, you may not agree with, a
 toggle is provided to easily turn it of using `yapfify-toggle-on-save`.
 
-Installation:
+* Installation:
 
 Add yapfify.el to your load-path.
 
@@ -16,4 +17,8 @@ yapfify-buffer to python-mode-hook:
 (add-hook 'python-mode-hook yapfify-format-buffer)
 #+END_SRC
 
+* Why not py-yapf?
 
+Py-yapf works on a temporary file (placed in /tmp). Therefore it does not pick
+up on any project specific YAPF styles. Yapfify works on the original file, so
+that any project settings supported by YAPF itself are used.
