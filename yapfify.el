@@ -88,7 +88,7 @@ will be shown in a help-window."
   (interactive)
   (add-hook 'before-save-hook 'yapfify-buffer nil t))
 
-(defun toggle-yapfify-enable-on-save ()
+(defun yapfify-toggle-enable-on-save ()
   "If yapfify-enable-on-save is currently one of the before-save-hooks disable
 it and vice versa."
   (interactive)
