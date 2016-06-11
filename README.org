@@ -1,10 +1,10 @@
 * Yapfify 
 Yapfify uses [[https://github.com/google/yapf][YAPF]] to format a Python buffer. It can be called explicitly on a
-certain buffer, but more conveniently it can be used to automatically format
-a buffer before saving it.
+certain buffer using `yapfify-buffer`, but more conveniently it can be used to
+automatically format a buffer before saving it.
 
 Because YAPF will sometimes do things to your code, you may not agree with, a
-toggle is provided to easily turn it of using `yapfify-toggle-on-save`.
+toggle is provided to easily turn it of using `yapfify-toggle-enable-on-save`.
 
 * Installation:
 
