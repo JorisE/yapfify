@@ -23,41 +23,38 @@
 ;;; Commentary:
 ;;
 ;; Yapfify uses yapf to format a Python buffer. It can be called explicitly on a
-;; certain buffer, but more conveniently it can be used to automatically format
-;; a buffer before saving it.
-;;
-;; Because YAPF will sometimes do things to your code, you may not agree with, a
-;; toggle is provided to easily turn it of.
+;; certain buffer, but more conveniently, a minor-mode 'yapf-mode' is provided
+;; that turns on automatically running YAPF on a buffer before saving.
 ;;
 ;; Installation:
 ;;
 ;; Add yapfify.el to your load-path.
 ;;
 ;; To automatically format all Python buffers before saving, add the function
-;; yapfify-buffer to python-mode-hook:
+;; yapf-mode to python-mode-hook:
 ;;
-;; (add-hook 'python-mode-hook yapfify-format-buffer)
+;; (add-hook 'python-mode-hook 'yapf-mode)
 ;;
 ;;; Code:
 
-(defun call-yapf-bin (input-buffer output-buffer)
-  "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER and
-return the exit code."
+
+(defun yapfify-call-bin (input-buffer output-buffer)
+  "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
+Return the exit code."
   (with-current-buffer input-buffer
     (call-process-region (point-min) (point-max) "yapf" nil output-buffer)))
 
 ;;;###autoload
 (defun yapfify-buffer ()
-  "Try to yapfify the current buffer. If yapf exits with an error, the output
-will be shown in a help-window."
+  "Try to yapfify the current buffer.
+If yapf exits with an error, the output will be shown in a help-window."
   (interactive)
-  (let* ((file (buffer-file-name))
-         (original-buffer (current-buffer))
+  (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
          (tmpbuf (get-buffer-create "Yapf output"))
-         (exit-code (call-yapf-bin original-buffer tmpbuf)))
+         (exit-code (yapfify-call-bin original-buffer tmpbuf)))
 
-    ;; There are three exit-codes defined for yapf:
+    ;; There are three exit-codes defined for YAPF:
     ;; 0: Exit with no change
     ;; 1: Exit with error
     ;; 2: Exit with changes to files
@@ -71,36 +68,19 @@ will be shown in a help-window."
 
           ((eq exit-code 1)
            (with-help-window "*Yapf errors*"
-             ;; Wow, isn't this weird. There is apparently no function that
-             ;; evaluates body in the freshly created buffer, so you always
-             ;; have to do `with-current-buffer` on the buffer you just
-             ;; created.
-             (with-current-buffer "*Yapf errors*"
-               (insert
-                (format "Yapf failed with the following error(s): \n\n%s"
-                        (with-current-buffer tmpbuf
-                          (buffer-string))))))))
-                                        ; Clean up tmpbuf
+             (print
+              (format "Yapf failed with the following error(s): \n\n%s"
+                      (with-current-buffer tmpbuf
+                        (buffer-string)))))))
+    ;; Clean up tmpbuf
     (kill-buffer tmpbuf)))
 
-(defun yapfify-enable-on-save ()
-  "Add this hook to python-mode to enable yapfifying before saving."
-  (interactive)
-  (add-hook 'before-save-hook 'yapfify-buffer nil t))
-
-(defun yapfify-toggle-enable-on-save ()
-  "If yapfify-enable-on-save is currently one of the before-save-hooks disable
-it and vice versa."
-  (interactive)
-
-  (if (member 'yapfify-enable-on-save python-mode-hook)
-      (progn (remove-hook 'python-mode-hook 'yapfify-enable-on-save)
-             (remove-hook 'before-save-hook 'yapfify-buffer t)
-             (message "yapfify-buffer on save disabled."))
-    (progn
-      (add-hook 'python-mode-hook 'yapfify-enable-on-save)
+(define-minor-mode yapf-mode
+  "Automatically run YAPF before saving."
+  :lighter " YAPF"
+  (if yapf-mode
       (add-hook 'before-save-hook 'yapfify-buffer nil t)
-      (message "yapfify-buffer on save enabled."))))
+    (remove-hook 'before-save-hook 'yapfify-buffer t)))
 
 (provide 'yapfify)
 

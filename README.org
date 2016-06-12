@@ -1,20 +1,17 @@
 * Yapfify 
-Yapfify uses [[https://github.com/google/yapf][YAPF]] to format a Python buffer. It can be called explicitly on a
-certain buffer using `yapfify-buffer`, but more conveniently it can be used to
-automatically format a buffer before saving it.
-
-Because YAPF will sometimes do things to your code, you may not agree with, a
-toggle is provided to easily turn it of using `yapfify-toggle-enable-on-save`.
+Yapfify uses yapf to format a Python buffer. It can be called explicitly on a
+certain buffer, but more conveniently, a minor-mode 'yapf-mode' is provided
+that turns on automatically running YAPF on a buffer before saving.
 
 * Installation:
 
 Add yapfify.el to your load-path.
 
 To automatically format all Python buffers before saving, add the function
-yapfify-buffer to python-mode-hook:
+yapf-mode to python-mode-hook:
 
 #+BEGIN_SRC emacs-lisp
-(add-hook 'python-mode-hook yapfify-format-buffer)
+(add-hook 'python-mode-hook 'yapf-mode)
 #+END_SRC
 
 * Why not py-yapf?
