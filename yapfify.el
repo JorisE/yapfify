@@ -4,7 +4,7 @@
 
 ;; Author: Joris Engbers <info@jorisengbers.nl>
 ;; Homepage: https://github.com/JorisE/yapfify
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Package-Requires: ()
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -75,6 +75,7 @@ If yapf exits with an error, the output will be shown in a help-window."
     ;; Clean up tmpbuf
     (kill-buffer tmpbuf)))
 
+;;;###autoload
 (define-minor-mode yapf-mode
   "Automatically run YAPF before saving."
   :lighter " YAPF"
