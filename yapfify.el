@@ -55,13 +55,10 @@ If yapf exits with an error, the output will be shown in a help-window."
          (exit-code (yapfify-call-bin original-buffer tmpbuf)))
 
     ;; There are three exit-codes defined for YAPF:
-    ;; 0: Exit with no change
+    ;; 0: Exit with success (change or no change)
     ;; 1: Exit with error
-    ;; 2: Exit with changes to files
     ;; anything else would be very unexpected.
-    (cond ((eq exit-code 0))
-
-          ((eq exit-code 2)
+    (cond ((eq exit-code 0)
              (with-current-buffer tmpbuf
                (copy-to-buffer original-buffer (point-min) (point-max)))
              (goto-char original-point))
