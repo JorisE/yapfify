@@ -57,11 +57,17 @@ If yapf exits with an error, the output will be shown in a help-window."
     ;; There are three exit-codes defined for YAPF:
     ;; 0: Exit with success (change or no change)
     ;; 1: Exit with error
+    ;; 2: Exit with success and change (Backward compatibility)
     ;; anything else would be very unexpected.
     (cond ((eq exit-code 0)
-             (with-current-buffer tmpbuf
-               (copy-to-buffer original-buffer (point-min) (point-max)))
-             (goto-char original-point))
+           (with-current-buffer tmpbuf
+             (copy-to-buffer original-buffer (point-min) (point-max)))
+           (goto-char original-point))
+
+          ((eq exit-code 2)
+           (with-current-buffer tmpbuf
+            (copy-to-buffer original-buffer (point-min) (point-max)))
+          (goto-char original-point))
 
           ((eq exit-code 1)
            (with-help-window "*Yapf errors*"
