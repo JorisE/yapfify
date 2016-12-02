@@ -51,7 +51,7 @@ If yapf exits with an error, the output will be shown in a help-window."
   (interactive)
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
-         (tmpbuf (get-buffer-create "Yapf output"))
+         (tmpbuf (generate-new-buffer "*yapfify*"))
          (exit-code (yapfify-call-bin original-buffer tmpbuf)))
 
     ;; There are three exit-codes defined for YAPF:
@@ -65,11 +65,8 @@ If yapf exits with an error, the output will be shown in a help-window."
            (goto-char original-point))
 
           ((eq exit-code 1)
-           (with-help-window "*Yapf errors*"
-             (print
-              (format "Yapf failed with the following error(s): \n\n%s"
-                      (with-current-buffer tmpbuf
-                        (buffer-string)))))))
+           (error "Yapf failed, see *yapfify* buffer for details")))
+
     ;; Clean up tmpbuf
     (kill-buffer tmpbuf)))
 
