@@ -38,11 +38,30 @@
 ;;; Code:
 
 
-(defun yapfify-call-bin (input-buffer output-buffer)
+(defun yapfify-call-bin (input-buffer output-buffer start-line end-line)
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
 Return the exit code."
   (with-current-buffer input-buffer
-    (call-process-region (point-min) (point-max) "yapf" nil output-buffer)))
+    (call-process-region (point-min) (point-max) "yapf" nil output-buffer nil (concat  "-l " (number-to-string start-line) "-" (number-to-string end-line)))))
+
+(defun get-start-point ()
+  "If there is an active region, return region beginning, else return the first
+point in the bufffer"
+  (if (use-region-p)
+      (region-beginning)
+    (point-min)))
+
+(defun get-end-point ()
+  "If there is an active region, return region end, else return the last point
+in the bufffer"
+  (if (use-region-p)
+      (region-end)
+    (point-max)))
+
+(defun get-buffer-string (buffer)
+  "Return the contents of buffer"
+  (with-current-buffer buffer
+    (buffer-string)))
 
 ;;;###autoload
 (defun yapfify-buffer ()
@@ -52,7 +71,9 @@ If yapf exits with an error, the output will be shown in a help-window."
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
          (tmpbuf (generate-new-buffer "*yapfify*"))
-         (exit-code (yapfify-call-bin original-buffer tmpbuf)))
+         (start-line (line-number-at-pos (get-start-point)))
+         (end-line (line-number-at-pos (get-end-point)))
+         (exit-code (yapfify-call-bin original-buffer tmpbuf start-line end-line)))
 
     ;; There are three exit-codes defined for YAPF:
     ;; 0: Exit with success (change or no change on yapf >=0.11)
@@ -69,6 +90,7 @@ If yapf exits with an error, the output will be shown in a help-window."
 
     ;; Clean up tmpbuf
     (kill-buffer tmpbuf)))
+
 
 ;;;###autoload
 (define-minor-mode yapf-mode
