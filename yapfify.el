@@ -70,11 +70,13 @@ If yapf exits with an error, the output will be shown in a help-window."
   (interactive)
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
+         (original-window-pos (window-start))
          (tmpbuf (generate-new-buffer "*yapfify*"))
          (start-line (line-number-at-pos (get-start-point)))
          (end-line (line-number-at-pos (get-end-point)))
          (exit-code (yapfify-call-bin original-buffer tmpbuf start-line end-line)))
 
+    (deactivate-mark)
     ;; There are three exit-codes defined for YAPF:
     ;; 0: Exit with success (change or no change on yapf >=0.11)
     ;; 1: Exit with error
@@ -82,14 +84,15 @@ If yapf exits with an error, the output will be shown in a help-window."
     ;; anything else would be very unexpected.
     (cond ((or (eq exit-code 0) (eq exit-code 2))
            (with-current-buffer tmpbuf
-             (copy-to-buffer original-buffer (point-min) (point-max)))
-           (goto-char original-point))
-
+             (copy-to-buffer original-buffer (point-min) (point-max))))
           ((eq exit-code 1)
            (error "Yapf failed, see *yapfify* buffer for details")))
 
     ;; Clean up tmpbuf
-    (kill-buffer tmpbuf)))
+    (kill-buffer tmpbuf)
+    ;; restore window to similar state
+    (goto-char original-point)
+    (set-window-start (selected-window) original-window-pos)))
 
 
 ;;;###autoload
