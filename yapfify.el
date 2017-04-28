@@ -44,36 +44,28 @@ Return the exit code."
   (with-current-buffer input-buffer
     (call-process-region (point-min) (point-max) "yapf" nil output-buffer nil (concat  "-l " (number-to-string start-line) "-" (number-to-string end-line)))))
 
-(defun get-start-point ()
-  "If there is an active region, return region beginning, else return the first
-point in the bufffer"
-  (if (use-region-p)
-      (region-beginning)
-    (point-min)))
-
-(defun get-end-point ()
-  "If there is an active region, return region end, else return the last point
-in the bufffer"
-  (if (use-region-p)
-      (region-end)
-    (point-max)))
-
 (defun get-buffer-string (buffer)
   "Return the contents of buffer"
   (with-current-buffer buffer
     (buffer-string)))
 
 ;;;###autoload
-(defun yapfify-buffer ()
+(defun yapfify-buffer (beginning end)
   "Try to yapfify the current buffer.
 If yapf exits with an error, the output will be shown in a help-window."
-  (interactive)
+  (interactive "r")
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
          (original-window-pos (window-start))
+         (start-line (line-number-at-pos (if (use-region-p)
+                                             beginning
+                                           (point-min))))
+         (end-line (line-number-at-pos (if (use-region-p)
+                                           (if (or (= (char-before end) 10) (= (char-before end) 13))
+                                               (- end 1)
+                                             end)
+                                         (point-max))))
          (tmpbuf (generate-new-buffer "*yapfify*"))
-         (start-line (line-number-at-pos (get-start-point)))
-         (end-line (line-number-at-pos (get-end-point)))
          (exit-code (yapfify-call-bin original-buffer tmpbuf start-line end-line)))
 
     (deactivate-mark)
