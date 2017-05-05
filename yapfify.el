@@ -38,22 +38,37 @@
 ;;; Code:
 
 
-(defun yapfify-call-bin (input-buffer output-buffer)
+(defun yapfify-call-bin (input-buffer output-buffer start-line end-line)
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
 Return the exit code."
   (with-current-buffer input-buffer
-    (call-process-region (point-min) (point-max) "yapf" nil output-buffer)))
+    (call-process-region (point-min) (point-max) "yapf" nil output-buffer nil (concat  "-l " (number-to-string start-line) "-" (number-to-string end-line)))))
+
+(defun get-buffer-string (buffer)
+  "Return the contents of buffer"
+  (with-current-buffer buffer
+    (buffer-string)))
 
 ;;;###autoload
-(defun yapfify-buffer ()
+(defun yapfify-buffer (beginning end)
   "Try to yapfify the current buffer.
 If yapf exits with an error, the output will be shown in a help-window."
-  (interactive)
+  (interactive "r")
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
+         (original-window-pos (window-start))
+         (start-line (line-number-at-pos (if (use-region-p)
+                                             beginning
+                                           (point-min))))
+         (end-line (line-number-at-pos (if (use-region-p)
+                                           (if (or (= (char-before end) 10) (= (char-before end) 13))
+                                               (- end 1)
+                                             end)
+                                         (point-max))))
          (tmpbuf (generate-new-buffer "*yapfify*"))
-         (exit-code (yapfify-call-bin original-buffer tmpbuf)))
+         (exit-code (yapfify-call-bin original-buffer tmpbuf start-line end-line)))
 
+    (deactivate-mark)
     ;; There are three exit-codes defined for YAPF:
     ;; 0: Exit with success (change or no change on yapf >=0.11)
     ;; 1: Exit with error
@@ -61,14 +76,16 @@ If yapf exits with an error, the output will be shown in a help-window."
     ;; anything else would be very unexpected.
     (cond ((or (eq exit-code 0) (eq exit-code 2))
            (with-current-buffer tmpbuf
-             (copy-to-buffer original-buffer (point-min) (point-max)))
-           (goto-char original-point))
-
+             (copy-to-buffer original-buffer (point-min) (point-max))))
           ((eq exit-code 1)
            (error "Yapf failed, see *yapfify* buffer for details")))
 
     ;; Clean up tmpbuf
-    (kill-buffer tmpbuf)))
+    (kill-buffer tmpbuf)
+    ;; restore window to similar state
+    (goto-char original-point)
+    (set-window-start (selected-window) original-window-pos)))
+
 
 ;;;###autoload
 (define-minor-mode yapf-mode
