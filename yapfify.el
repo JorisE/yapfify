@@ -86,14 +86,17 @@ If yapf exits with an error, the output will be shown in a help-window."
     (goto-char original-point)
     (set-window-start (selected-window) original-window-pos)))
 
+(defun yapfify-non-interactive ()
+  "Wrapper to allow calling yapfify-buffer non-interactively. ie. in hooks etc."
+  (call-interactively 'yapfify-buffer))
 
 ;;;###autoload
 (define-minor-mode yapf-mode
   "Automatically run YAPF before saving."
   :lighter " YAPF"
   (if yapf-mode
-      (add-hook 'before-save-hook 'yapfify-buffer nil t)
-    (remove-hook 'before-save-hook 'yapfify-buffer t)))
+      (add-hook 'before-save-hook 'yapfify-non-interactive nil t)
+    (remove-hook 'before-save-hook 'yapfify-non-interactive t)))
 
 (provide 'yapfify)
 
