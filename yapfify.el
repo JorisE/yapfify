@@ -40,34 +40,33 @@
 
 (defun yapfify-call-bin (input-buffer output-buffer start-line end-line)
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
-Return the exit code."
+
+Return the exit code.  START-LINE and END-LINE specify region to
+format."
   (with-current-buffer input-buffer
-    (call-process-region (point-min) (point-max) "yapf" nil output-buffer nil (concat  "-l " (number-to-string start-line) "-" (number-to-string end-line)))))
+    (call-process-region (point-min) (point-max) "yapf" nil output-buffer nil "-l" (concat (number-to-string start-line) "-" (number-to-string end-line)))))
 
 (defun get-buffer-string (buffer)
-  "Return the contents of buffer"
+  "Return the contents of BUFFER."
   (with-current-buffer buffer
     (buffer-string)))
 
 ;;;###autoload
-(defun yapfify-buffer (beginning end)
-  "Try to yapfify the current buffer.
+(defun yapfify-region (beginning end)
+  "Try to yapfify the current region.
+
 If yapf exits with an error, the output will be shown in a help-window."
   (interactive "r")
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
          (original-window-pos (window-start))
-         (start-line (line-number-at-pos (if (use-region-p)
-                                             beginning
-                                           (point-min))))
-         (end-line (line-number-at-pos (if (use-region-p)
-                                           (if (or (= (char-before end) 10) (= (char-before end) 13))
-                                               (- end 1)
-                                             end)
-                                         (point-max))))
+         (start-line (line-number-at-pos beginning))
+         (end-line (line-number-at-pos (if (or (= (char-before end) 10)
+                                               (= (char-before end) 13))
+                                           (- end 1)
+                                         end)))
          (tmpbuf (generate-new-buffer "*yapfify*"))
          (exit-code (yapfify-call-bin original-buffer tmpbuf start-line end-line)))
-
     (deactivate-mark)
     ;; There are three exit-codes defined for YAPF:
     ;; 0: Exit with success (change or no change on yapf >=0.11)
@@ -78,25 +77,26 @@ If yapf exits with an error, the output will be shown in a help-window."
            (with-current-buffer tmpbuf
              (copy-to-buffer original-buffer (point-min) (point-max))))
           ((eq exit-code 1)
-           (error "Yapf failed, see *yapfify* buffer for details")))
-
+           (error "Yapf failed, see %s buffer for details" (buffer-name tmpbuf))))
     ;; Clean up tmpbuf
     (kill-buffer tmpbuf)
     ;; restore window to similar state
     (goto-char original-point)
     (set-window-start (selected-window) original-window-pos)))
 
-(defun yapfify-non-interactive ()
-  "Wrapper to allow calling yapfify-buffer non-interactively. ie. in hooks etc."
-  (call-interactively 'yapfify-buffer))
+;;;###autoload
+(defun yapfify-buffer ()
+  "Yapfify whole buffer."
+  (interactive)
+  (yapfify-region (point-min) (point-max)))
 
 ;;;###autoload
 (define-minor-mode yapf-mode
   "Automatically run YAPF before saving."
   :lighter " YAPF"
   (if yapf-mode
-      (add-hook 'before-save-hook 'yapfify-non-interactive nil t)
-    (remove-hook 'before-save-hook 'yapfify-non-interactive t)))
+      (add-hook 'before-save-hook 'yapfify-buffer nil t)
+    (remove-hook 'before-save-hook 'yapfify-buffer t)))
 
 (provide 'yapfify)
 
