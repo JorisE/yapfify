@@ -37,6 +37,7 @@
 ;;
 ;;; Code:
 
+(require 'cl)
 
 (defun yapfify-call-bin (input-buffer output-buffer start-line end-line)
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
@@ -59,7 +60,8 @@ If yapf exits with an error, the output will be shown in a help-window."
   (interactive "r")
   (let* ((original-buffer (current-buffer))
          (original-point (point))  ; Because we are replacing text, save-excursion does not always work.
-         (original-window-pos (window-start))
+         (buffer-windows (get-buffer-window-list original-buffer nil t))
+         (original-window-pos (mapcar 'window-start buffer-windows))
          (start-line (line-number-at-pos beginning))
          (end-line (line-number-at-pos (if (or (= (char-before end) 10)
                                                (= (char-before end) 13))
@@ -82,7 +84,7 @@ If yapf exits with an error, the output will be shown in a help-window."
     (kill-buffer tmpbuf)
     ;; restore window to similar state
     (goto-char original-point)
-    (set-window-start (selected-window) original-window-pos)))
+    (mapcar* 'set-window-start buffer-windows original-window-pos)))
 
 ;;;###autoload
 (defun yapfify-buffer ()
