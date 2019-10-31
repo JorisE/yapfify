@@ -37,7 +37,7 @@
 ;;
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 
 (defun yapfify-call-bin (input-buffer output-buffer start-line end-line)
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
