@@ -39,13 +39,21 @@
 
 (require 'cl-lib)
 
+(defcustom yapfify-executable "yapf"
+  "Executable used to start yapf."
+  :type 'string
+  :group 'yapfify)
+
 (defun yapfify-call-bin (input-buffer output-buffer start-line end-line)
   "Call process yapf on INPUT-BUFFER saving the output to OUTPUT-BUFFER.
 
 Return the exit code.  START-LINE and END-LINE specify region to
 format."
   (with-current-buffer input-buffer
-    (call-process-region (point-min) (point-max) "yapf" nil output-buffer nil "-l" (concat (number-to-string start-line) "-" (number-to-string end-line)))))
+    (call-process-region (point-min) (point-max)
+                         yapfify-executable nil output-buffer
+                         nil "-l" (concat (number-to-string start-line) "-"
+                                           (number-to-string end-line)))))
 
 (defun get-buffer-string (buffer)
   "Return the contents of BUFFER."
