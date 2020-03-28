@@ -75,7 +75,7 @@ If yapf exits with an error, the output will be shown in a help-window."
                                                (= (char-before end) 13))
                                            (- end 1)
                                          end)))
-         (tmpbuf (generate-new-buffer "*yapfify*"))
+         (tmpbuf (get-buffer-create "*yapfify*"))
          (exit-code (yapfify-call-bin original-buffer tmpbuf start-line end-line)))
     (deactivate-mark)
     ;; There are three exit-codes defined for YAPF:
