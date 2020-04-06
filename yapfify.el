@@ -101,6 +101,14 @@ If yapf exits with an error, the output will be shown in a help-window."
   (yapfify-region (point-min) (point-max)))
 
 ;;;###autoload
+(defun yapfify-region-or-buffer ()
+  "Yapfify the region if it is active. Otherwise, yapfify the buffer"
+  (interactive)
+  (if (region-active-p)
+      (yapfify-region (region-beginning) (region-end))
+    (yapfify-buffer)))
+
+;;;###autoload
 (define-minor-mode yapf-mode
   "Automatically run YAPF before saving."
   :lighter " YAPF"
