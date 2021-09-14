@@ -4,7 +4,7 @@
 
 ;; Author: Joris Engbers <info@jorisengbers.nl>
 ;; Homepage: https://github.com/JorisE/yapfify
-;; Version: 0.0.9
+;; Version: 1.0.0
 ;; Package-Requires: ()
 
 ;; This file is free software; you can redistribute it and/or modify
