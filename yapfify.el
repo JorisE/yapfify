@@ -86,7 +86,10 @@ If yapf exits with an error, the output will be shown in a help-window."
     ;; anything else would be very unexpected.
     (cond ((or (eq exit-code 0) (eq exit-code 2))
            (with-current-buffer tmpbuf
-             (copy-to-buffer original-buffer (point-min) (point-max))))
+             (unless (eq (compare-buffer-substrings original-buffer nil nil
+                                                    nil nil nil)
+                         0)
+               (copy-to-buffer original-buffer (point-min) (point-max)))))
           ((eq exit-code 1)
            (error "Yapf failed, see %s buffer for details" (buffer-name tmpbuf))))
     ;; Clean up tmpbuf
