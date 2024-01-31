@@ -26,6 +26,8 @@
 ;; certain buffer, but more conveniently, a minor-mode 'yapf-mode' is provided
 ;; that turns on automatically running YAPF on a buffer before saving.
 ;;
+;; This file is modified by Yushun Cheng on 1 Sep 2023.
+;;
 ;; Installation:
 ;;
 ;; Add yapfify.el to your load-path.
